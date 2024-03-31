@@ -1,0 +1,75 @@
+Report: Understanding and Using the Hadoop Search Engine
+Introduction
+
+This report aims to provide a detailed understanding of the Hadoop search engine implemented using the MapReduce framework with the MRJob library in Python. The search engine consists of two main components: the Indexer for indexing Wikipedia articles and the Query for searching based on user queries.
+Indexer (indexer.py)
+
+The Indexer is responsible for creating an inverted index of terms from the Wikipedia articles. It processes each article's title, section title, and section text to extract terms. For each term, it emits a key-value pair where the term is the key and the article ID is the value. This step is crucial for building a searchable index.
+Mapper (mapper_extract_terms)
+
+    Input: CSV line representing an article (ARTICLE_ID, TITLE, SECTION_TITLE, SECTION_TEXT)
+    Output: Key-value pairs of terms and article IDs
+    Processing:
+        Combines the title, section title, and section text into a single text string.
+        Tokenizes the text using regular expressions to extract words.
+        Emits each term along with the article ID.
+
+Reducer (reducer_build_index)
+
+    Input: Term and list of article IDs
+    Output: Key-value pairs of terms and TF-IDF scores for each article
+    Processing:
+        Calculates the term frequency (TF) for each document.
+        Calculates the IDF (Inverse Document Frequency) for the term.
+        Calculates the TF-IDF score for each article and emits the term along with the article ID and score.
+
+Execution
+
+To run the Indexer:
+
+bash
+
+python3 indexer.py <input_file> -r hadoop
+
+Query (query.py)
+
+The Query component allows users to search for articles based on a query text. It calculates the TF-IDF score for each article based on the query terms and ranks the articles based on these scores.
+Configuration
+
+    configure_args: Configures command-line arguments for the query text and the number of results to return.
+
+Mapper (mapper_extract_terms)
+
+    Input: Line representing an article (ARTICLE_ID, TITLE, SECTION_TITLE, SECTION_TEXT)
+    Output: Key-value pairs of terms and article IDs
+    Processing: Similar to the Indexer, it tokenizes the text and emits terms along with article IDs.
+
+Reducer (reducer_calculate_scores)
+
+    Input: Term and list of article IDs
+    Output: Key-value pairs of article IDs and TF-IDF scores for the query terms
+    Processing: Calculates the TF-IDF score for each article based on the query terms.
+
+Reducer (reducer_aggregate_scores)
+
+    Input: Article ID and list of TF-IDF scores
+    Output: Aggregated TF-IDF score for each article
+    Processing: Aggregates the TF-IDF scores for each article.
+
+Reducer (reducer_sort_results)
+
+    Input: None
+    Output: Top N articles based on TF-IDF scores
+    Processing: Sorts the articles based on their TF-IDF scores and returns the top N results.
+
+Execution
+
+To run the Query:
+
+bash
+
+python3 query.py <input_file> --query "your query text" --num_results <number_of_results> -r hadoop
+
+Conclusion
+
+The Hadoop search engine provides a scalable and efficient way to index and search through large datasets, such as the English Wikipedia dump. By leveraging the MapReduce framework, it can handle massive amounts of data and provide relevant search results to users based on their queries.
